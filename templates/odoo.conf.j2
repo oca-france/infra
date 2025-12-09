@@ -1,0 +1,58 @@
+[options]
+data_dir = {{ odoo_data }}
+admin_passwd = {{ admin_passwd }}
+list_db = False
+db_name = oca-france-production
+dbfilter = oca-france-production
+db_template = template1
+workers = 4
+max_cron_threads = 2
+running_env = production
+server_wide_modules = base,web,module_change_auto_install
+modules_auto_install_disabled = 
+    base_install_request,
+    google_gmail,
+    iap,
+    mail_bot,
+    partner_autocomplete,
+    sms
+
+without_demo = True
+load_language = fr_FR
+unaccent = True
+
+# db_host = False
+# db_maxconn = 64
+# db_maxconn_gevent = False
+# db_password = False
+# db_port = False
+# db_replica_host = False
+# db_replica_port = False
+# db_sslmode = prefer
+# db_user = False
+# from_filter = False
+# gevent_port = 8072
+# http_enable = True
+# http_interface = 
+# http_port = 8069
+# limit_memory_hard = 2684354560
+# limit_memory_hard_gevent = False
+# limit_memory_soft = 2147483648
+# limit_memory_soft_gevent = False
+# limit_request = 65536
+# limit_time_cpu = 60
+# limit_time_real = 120
+# limit_time_real_cron = -1
+# limit_time_worker_cron = 0
+# log_db = False
+# log_db_level = warning
+# log_handler = :INFO
+# log_level = info
+# logfile = 
+# osv_memory_count_limit = 0
+# unaccent = True
+# websocket_keep_alive_timeout = 3600
+# websocket_rate_limit_burst = 10
+# websocket_rate_limit_delay = 0.2
+# x_sendfile = False
+

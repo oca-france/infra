@@ -1,0 +1,3 @@
+odoo = [
+    "oca-france-prod",
+]

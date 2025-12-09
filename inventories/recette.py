@@ -1,0 +1,3 @@
+odoo = [
+    "oca-france-recette",
+]
