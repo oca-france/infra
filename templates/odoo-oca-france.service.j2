@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory={{ working_directory }}
-ExecStartPre=uv sync --locked --check
+#ExecStartPre=uv sync --locked --check
 ExecStartPre={{ working_directory }}/.venv/bin/click-odoo-update -c {{ config_path }}
 ExecStart={{ working_directory }}/.venv/bin/odoo -c {{ config_path }}
 Restart=always

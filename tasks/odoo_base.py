@@ -3,13 +3,13 @@ from pyinfra.operations import apt, snap, server, postgresql, files, systemd
 from pyinfra import host
 
 # make use uv is present
-# install from curl to get version 0.9.11 with 
+# Minal version 0.9.11 with 
 # exclude-dependencies support
-# snap.package(
-#     name="Install uv",
-#     packages=["astral-uv", ],
-#     classic=True,
-# )
+snap.package(
+    name="Install uv",
+    packages=["astral-uv", ],
+    classic=True,
+)
 # make sure odoo user is set
 server.user(
     name="Create Odoo server user",
@@ -54,4 +54,14 @@ systemd.service(
     daemon_reload=polkit_config.changed,
     restarted=polkit_config.changed,
     enabled=True,
+)
+files.download(
+    name="Download wkhtmltopdf",
+    src="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb",
+    dest="/tmp/wkhtmltopdf.deb",
+    sha1sum="967390a759707337b46d1c02452e2bb6b2dc6d59",
+)
+apt.deb(
+    name="Install wkhtmltopdf",
+    src="/tmp/wkhtmltopdf.deb",
 )
