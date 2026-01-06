@@ -1,24 +1,36 @@
 """Here we setup things with root that are required for Odoo instance"""
-from pyinfra.operations import apt, snap, server, postgresql, files, systemd
+from pyinfra.operations import apt, snap, server, postgres, files, systemd
 from pyinfra import host
 
-# make use uv is present
-# Minal version 0.9.11 with 
-# exclude-dependencies support
-snap.package(
-    name="Install uv",
-    packages=["astral-uv", ],
-    classic=True,
+# Dependencies
+apt.packages(
+    name="Make sure Postgresql is installed",
+    packages=["postgresql"],
 )
-# make sure odoo user is set
+# setup template database doing it manually
+# UPDATE pg_database SET datistemplate=FALSE WHERE datname='template1';
+# DROP DATABASE template1;
+# CREATE DATABASE template1 WITH owner=postgres template=template0 encoding='UTF8' LC_collate='fr_FR.UTF-8' lc_ctype='fr_FR.UTF-8';
+# UPDATE pg_database SET datistemplate=TRUE WHERE datname='template1';
+files.download(
+    name="Download wkhtmltopdf",
+    src="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb",
+    dest="/tmp/wkhtmltopdf.deb",
+    sha1sum="967390a759707337b46d1c02452e2bb6b2dc6d59",
+)
+apt.deb(
+    name="Install wkhtmltopdf",
+    src="/tmp/wkhtmltopdf.deb",
+)
+
+# Odoo user related configuration
 server.user(
     name="Create Odoo server user",
     user=host.data.odoo_username,
     shell="/bin/bash",
     present=True,
 )
-
-postgresql.role(
+postgres.role(
     name="Crate Odoo postgresql user role",
     role=host.data.odoo_username,
     present= True,
@@ -55,13 +67,12 @@ systemd.service(
     restarted=polkit_config.changed,
     enabled=True,
 )
-files.download(
-    name="Download wkhtmltopdf",
-    src="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb",
-    dest="/tmp/wkhtmltopdf.deb",
-    sha1sum="967390a759707337b46d1c02452e2bb6b2dc6d59",
-)
-apt.deb(
-    name="Install wkhtmltopdf",
-    src="/tmp/wkhtmltopdf.deb",
+
+# make use uv is present
+# Minal version 0.9.11 with 
+# exclude-dependencies support
+snap.package(
+    name="Install uv",
+    packages=["astral-uv", ],
+    classic=True,
 )

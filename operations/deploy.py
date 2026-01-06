@@ -1,6 +1,7 @@
 from pyinfra import host, local
 
 local.include("tasks/common.py")
+local.include("tasks/fail2ban.py")
 
 if "odoo" in host.groups:
     local.include("tasks/odoo_base.py")

@@ -2,12 +2,12 @@
 data_dir = {{ odoo_data }}
 admin_passwd = {{ admin_passwd }}
 list_db = False
-db_name = oca-france-production
-dbfilter = oca-france-production
+db_name = oca-france-{{ environement_name }}
+dbfilter = oca-france-{{ environement_name }}
 db_template = template1
 workers = 4
 max_cron_threads = 2
-running_env = production
+running_env = {{ environement_name }}
 server_wide_modules = base,web,module_change_auto_install
 modules_auto_install_disabled = 
     base_install_request,

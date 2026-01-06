@@ -19,3 +19,6 @@ server.locale(
     name="Ensure fr_FR.UTF-8 locale is present",
     locale="fr_FR.UTF-8",
 )
+# Manyuall run:
+# locale-gen fr_FR.UTF-8
+# update-locale LANG=fr_FR.UTF-8
