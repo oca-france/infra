@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Odoo dump and sync to Recette daily at 4:00 AM
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+RandomizedDelaySec=3600
+Persistent=true
+Unit=odoo-send-to-recette.service
+
+[Install]
+WantedBy=timers.target
