@@ -36,6 +36,7 @@ odoo_config = files.template(
     odoo_data=data_directory,
     admin_passwd=host.data.odoo_admin_password,
     environement_name=host.data.environement_name,
+    server_env_ir_config_parameters=host.data.server_env_ir_config_parameters,
     _su_user=host.data.odoo_username
 )
 git_changed = git.worktree(
@@ -60,6 +61,7 @@ service_config = files.template(
     mode="655",
     working_directory=working_directory,
     user_name=host.data.odoo_username,
+    environement_name=host.data.environement_name,
     config_path=odoo_config_path,
 )
 if service_config.changed:

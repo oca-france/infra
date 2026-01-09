@@ -21,6 +21,13 @@ without_demo = True
 load_language = fr_FR
 unaccent = True
 
+{% if server_env_ir_config_parameters %}
+[ir.config_parameter]
+{%- for line in server_env_ir_config_parameters %}
+{{ line }}
+{%- endfor %}
+{% endif %}
+
 # db_host = False
 # db_maxconn = 64
 # db_maxconn_gevent = False
