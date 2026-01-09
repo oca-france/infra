@@ -1,0 +1,94 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+# --- Configuration ---
+ODOO_USER="{{ odoo_username }}"
+PROJECT_DIR="/home/${ODOO_USER}/oca-france"
+CONFIG_PATH="/home/${ODOO_USER}/.odoorc"
+DUMP_DIR="/home/${ODOO_USER}/.odoo_dumps"
+DB_NAME="oca-france-{{ environement_name }}"
+SERVICE_NAME="odoo-oca-france"
+
+USAGE="Usage: $0 [-R] [-h] <git-reference>
+
+Options:
+    -R, --restore    Restore the database from production (overwrites staging)
+    -h, --help       Show this help message.
+
+Arguments:
+    git-reference    The git reference to deploy (e.g., 18.0, my-branch, commit-sha)
+"
+
+RESTORE_DB=false
+
+# --- Options Parsing ---
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -R|--restore)
+            RESTORE_DB=true
+            shift
+            ;;
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            GIT_REFERENCE="$1"
+            shift
+            ;;
+    esac
+done
+
+# --- Validation ---
+if [ -z "${GIT_REFERENCE:-}" ]; then
+    echo "Error: Git reference is required." >&2
+    echo "$USAGE" >&2
+    exit 1
+fi
+
+echo "--- Deploying: Reference $GIT_REFERENCE ---"
+
+# --- Code Update ---
+echo "Updating source code..."
+git -C "$PROJECT_DIR" fetch origin
+git -C "$PROJECT_DIR" reset --hard "$GIT_REFERENCE"
+
+# --- Service Stop ---
+echo "Stopping service $SERVICE_NAME..."
+systemctl stop "$SERVICE_NAME"
+
+# Safety backup before any modifications
+rm -rf "${DUMP_DIR}/before-deploy"
+
+echo "Creating safety backup of current database..."
+"$PROJECT_DIR/.venv/bin/click-odoo-backupdb" \
+    --filestore \
+    --format folder \
+    -c "$CONFIG_PATH" \
+    "$DB_NAME" \
+    "${DUMP_DIR}/before-deploy"
+
+# --- Optional Restore ---
+if [ "$RESTORE_DB" = true ]; then
+    echo "Restore requested. Preparing database..."
+    
+    echo "Restoring from production data..."
+    "$PROJECT_DIR/.venv/bin/click-odoo-restoredb" \
+        -c "$CONFIG_PATH" \
+        --force \
+        --neutralize "$DB_NAME" \
+        "${DUMP_DIR}/production-data/"
+else
+    echo "Skipping database restore."
+fi
+
+# --- Restart ---
+echo "Starting service $SERVICE_NAME..."
+systemctl start "$SERVICE_NAME"
+
+echo "--- Deployment finished ---"

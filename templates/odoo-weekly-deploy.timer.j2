@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Odoo weekly deploy and restore from production
+
+[Timer]
+OnCalendar=Mon *-*-* 04:00:00
+RandomizedDelaySec=3600
+Persistent=true
+Unit=odoo-weekly-deploy.service
+
+[Install]
+WantedBy=timers.target

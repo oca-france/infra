@@ -1,0 +1,13 @@
+[Unit]
+Description=Weekly Odoo deploy and restore from production
+After=network.target
+
+[Service]
+Type=oneshot
+User={{ odoo_username }}
+Group={{ odoo_username }}
+WorkingDirectory=/home/{{ odoo_username }}/
+ExecStart=/home/{{ odoo_username }}/scripts/deploy -R origin/18.0
+
+[Install]
+WantedBy=multi-user.target

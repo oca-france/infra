@@ -6,11 +6,9 @@ After=network.target
 Type=simple
 WorkingDirectory={{ working_directory }}
 ExecStartPre=/snap/bin/uv sync --locked
-{%- if environement_name != "production" %}
-ExecStart={{ working_directory }}/.venv/bin/odoo -c {{ config_path }} neutralize
-{% endif %}
 ExecStartPre={{ working_directory }}/.venv/bin/click-odoo-update -c {{ config_path }} --i18n-overwrite
 ExecStart={{ working_directory }}/.venv/bin/odoo -c {{ config_path }}
+TimeoutStartSec=300
 Restart=always
 User={{ user_name }}
 Group={{ user_name }}

@@ -3,7 +3,7 @@ set -e
 
 # Configuration
 DUMP_DIR="/home/{{ odoo_username }}/.odoo_dumps"
-DUMP_FILE="$DUMP_DIR/dump-with-filestore-for-recette.zip"
+DUMP_DIRECTORY="$DUMP_DIR/production-data"
 RECETTE_HOST="oca-france-recette"
 
 # Create dump directory if it doesn't exist
@@ -11,14 +11,15 @@ mkdir -p "$DUMP_DIR"
 
 # Perform the dump
 echo "Starting Odoo dump..."
-{{ working_directory }}/.venv/bin/click-odoo-backupdb --filestore --force -c /home/{{ odoo_username }}/.odoorc {{ database_name }} "$DUMP_FILE"
+{{ working_directory }}/.venv/bin/click-odoo-backupdb --filestore --force --format folder -c /home/{{ odoo_username }}/.odoorc {{ database_name }} "$DUMP_DIRECTORY"
 
 # Send to recette
 echo "Sending dump to recette..."
-scp "$DUMP_FILE" "$RECETTE_HOST:$DUMP_FILE"
+ssh $RECETTE_HOST "rm -rf $DUMP_DIRECTORY"
+scp -r "$DUMP_DIRECTORY" "$RECETTE_HOST:$DUMP_DIRECTORY"
 
 # Delete local dump on success
 echo "Cleanup local dump..."
-rm "$DUMP_FILE"
+rm -rf "$DUMP_DIRECTORY"
 
 echo "Done!"

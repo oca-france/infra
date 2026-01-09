@@ -2,6 +2,6 @@ odoo = [
     "oca-france-prod",
 ]
 
-send_prod_to_recette = [
+odoo_daily_backup = [
     "oca-france-prod",
 ]

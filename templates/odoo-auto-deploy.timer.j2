@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Odoo auto-deploy check every minute
+
+[Timer]
+OnCalendar=*:*:00
+RandomizedDelaySec=5
+Persistent=true
+Unit=odoo-auto-deploy.service
+
+[Install]
+WantedBy=timers.target

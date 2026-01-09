@@ -5,7 +5,7 @@ from pyinfra import host
 # Dependencies
 apt.packages(
     name="Make sure Postgresql is installed",
-    packages=["postgresql"],
+    packages=["postgresql", "unzip"],
 )
 # setup template database doing it manually
 # UPDATE pg_database SET datistemplate=FALSE WHERE datname='template1';
@@ -54,7 +54,7 @@ polkit_config = files.template(
     dest="/etc/polkit-1/rules.d/50-odoo-service.rules",
     user="root",
     group="root",
-    mode="655",
+    mode="644",
     user_name=host.data.odoo_username,
 )
 
@@ -62,7 +62,6 @@ systemd.service(
     name=f"Ensure polkit rules are take into account",
     service=f"polkit.service",
     running=True,
-    reloaded=polkit_config.changed,
     daemon_reload=polkit_config.changed,
     restarted=polkit_config.changed,
     enabled=True,

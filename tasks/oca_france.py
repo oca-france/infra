@@ -6,7 +6,28 @@ from pyinfra import host
 working_directory = f"/home/{host.data.odoo_username}/oca-france"
 data_directory = f"/home/{host.data.odoo_username}/oca-france-data"
 odoo_config_path = f"/home/{host.data.odoo_username}/.odoorc"
+scripts_dir = f"/home/{host.data.odoo_username}/scripts"
 
+files.directory(
+    name="Create scripts directory",
+    path=scripts_dir,
+    user=host.data.odoo_username,
+    group=host.data.odoo_username,
+    mode="755",
+    _su_user=host.data.odoo_username,
+)
+
+deploy_script = files.template(
+    name="Deploy deploy.sh script",
+    src="templates/deploy.sh.j2",
+    dest=f"{scripts_dir}/deploy",
+    user=host.data.odoo_username,
+    group=host.data.odoo_username,
+    mode="755",
+    odoo_username=host.data.odoo_username,
+    environement_name=host.data.environement_name,
+    _su_user=host.data.odoo_username,
+)
 # clone repository to the proper version
 git.repo(
     name="OCA Odoo project",

@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+ODOO_USER="{{ odoo_username }}"
+PROJECT_DIR="/home/${ODOO_USER}/oca-france"
+DEPLOY_SCRIPT="/home/${ODOO_USER}/scripts/deploy"
+BRANCH="18.0"
+GIT_REFERENCE="origin/${BRANCH}"
+cd "$PROJECT_DIR"
+
+# Fetch updates from remote
+git fetch origin "$BRANCH"
+
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse "${GIT_REFERENCE}")
+
+if [ "$LOCAL" != "$REMOTE" ]; then
+    echo "$(date -Iseconds) New commits detected on ${GIT_REFERENCE}. Triggering deploy..."
+    "$DEPLOY_SCRIPT" --restore "${GIT_REFERENCE}"
+else
+    echo "$(date -Iseconds) No updates on ${GIT_REFERENCE}."
+fi

@@ -48,19 +48,10 @@ files.put(
     _su_user=odoo_user,
 )
 
-# 3. Create dump and scripts directory
+# 3. Create dump directory
 files.directory(
     name="Create dump directory",
     path=dumps_dir,
-    user=odoo_user,
-    group=odoo_user,
-    mode="755",
-    _su_user=odoo_user,
-)
-
-files.directory(
-    name="Create scripts directory",
-    path=scripts_dir,
     user=odoo_user,
     group=odoo_user,
     mode="755",
