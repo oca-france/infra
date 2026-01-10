@@ -71,52 +71,54 @@ The Odoo instance is deployed using the `oca_france` state. It ensures:
 - A virtual environment (managed by `uv`) is used for dependencies.
 - The instance runs as a systemd service, configured via templates.
 
-## Roadmap / Ideas
-
-- [ ] Implement Fail2ban for better security.
-- [ ] Add monitoring tools.
-
 ## Odoo Deployment Workflow
 
-I would recommand to use this repository to configure scripts
-that helps github action to update test and production environments but not
-rely on pyinfra to actually deploy new Odoo version while both should not
-conflict.
+The deployment is managed by a core script located at `/home/odoo/scripts/deploy`. This script handles service stopping, database dumping, code updates (reset hard to a git reference), optional database restoration, and service restarting.
 
-### Test Environment
+Currently, we do not use GitHub Actions directly to push code but rather rely on the server to pull and deploy via scheduled tasks or manual triggers.
 
-The goal is to update the test environment automatically when code is merged.
+### Recette (Test Environment)
 
-- **Trigger**: Merge to the `18.0` branch.
-- **Data**: Updates with a neutralized database dump from the previous day.
-- **Action**: GitHub Action connects via SSH to the receipt server.
-    - Stop odoo service.
-    - Dump the current test database.
-    - Drop the current test database.
-    - Restore the last neutralized dump.
-    - Synchronise filesotre.
-    - Update the code to the head of the `18.0` branch.
-    - Start odoo service, which will:
-        - Install python dependencies.
-        - Update odoo modules.
-        - run the service
+The recette environment is designed to be automatically updated and refreshed with production data.
 
+- **Automatic Update on Merge**:
+    - **Trigger**: Checks every minute for new commits on the `18.0` branch.
+    - **Mechanism**: Systemd timer `odoo-auto-deploy.timer`/`service`.
+    - **Script**: `/home/odoo/scripts/odoo-auto-deploy` which calls `deploy --restore origin/18.0`.
+    - **Result**: The instance is always up-to-date with the latest `18.0` code.
+
+- **Weekly Production Refresh**:
+    - **Trigger**: Every Monday at 04:00.
+    - **Mechanism**: Systemd timer `odoo-weekly-deploy.timer`/`service`.
+    - **Script**: Calls `deploy -R origin/18.0`.
+    - **Action**: Restores the latest production dump (neutralized) to the recette instance.
 
 ### Production Environment
 
-The production environment changes are controlled via tags.
+Production updates are intentional and manual. They are controlled via git tags.
 
-- **Trigger**: Pushing a "gliding" tag named `production`.
-- **Permissions**: Restricted rights on who can push this tag.
-- **Action**: CI triggers and updates the production instance.
-    - Stop odoo service.
-    - Dump the current production database.
-    - Update the code to the `production` tag.
-    - Start odoo service, which will:
-        - Install python dependencies.
-        - Update odoo modules.
-        - run the service
+- **Tag Format**: `18.0-YYYYMMDD` (e.g., `18.0-20260110`).
+- **Process**:
+    1. Create and push a tag from your local machine:
+       ```bash
+       git tag 18.0-20260110
+       git push origin 18.0-20260110
+       ```
+    2. Connect to the production server:
+       ```bash
+       ssh oca-france-prod
+       ```
+    3. Run the deployment script as the `odoo` user:
+       ```bash
+       sudo -u odoo /home/odoo/scripts/deploy 18.0-20260110
+       ```
 
-### Manual CI Actions
+### Deployment Script Details
 
-- Mechanism to manually trigger a restoration of the previous day's anonymized dump such as the [test environment deployment](#test-environment).
+The `deploy` script (`templates/deploy.sh.j2`) performs the following steps:
+1. **Fetch**: Fetches the latest code from origin.
+2. **Reset**: Hard resets the repository to the specified `<git-reference>`.
+3. **Stop**: Stops the `odoo-oca-france` service.
+4. **Backup**: Creates a safety backup of the current database in `~/.odoo_dumps/before-deploy`.
+5. **Restore (Optional)**: If `-R` or `--restore` is used, restores the latest production data from `~/.odoo_dumps/production-data/`.
+6. **Start**: Starts the `odoo-oca-france` service.
