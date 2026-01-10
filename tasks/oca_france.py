@@ -29,20 +29,34 @@ deploy_script = files.template(
     _su_user=host.data.odoo_username,
 )
 # clone repository to the proper version
-git.repo(
-    name="OCA Odoo project",
-    src="https://github.com/oca-france/oca-france-custom",
-    dest=f"/home/{host.data.odoo_username}/oca-france",
-    branch="18.0",
-    pull=True,
-    rebase=False,
-    # user: str | None=None,
-    # group: str | None=None,
-    # ssh_keyscan=False,
-    # update_submodules=False,
-    # recursive_submodules=False, **kwargs,
-    _su_user=host.data.odoo_username,
-)
+# Now we use the deploy script to handle deployment
+# yet this is needed for the first deploy so keep it commented
+# git.repo(
+#     name="OCA Odoo project",
+#     src="https://github.com/oca-france/oca-france-custom",
+#     dest=f"/home/{host.data.odoo_username}/oca-france",
+#     branch="18.0",
+#     pull=True,
+#     rebase=False,
+#     # user: str | None=None,
+#     # group: str | None=None,
+#     # ssh_keyscan=False,
+#     # update_submodules=False,
+#     # recursive_submodules=False, **kwargs,
+#     _su_user=host.data.odoo_username,
+# )
+# git_changed = git.worktree(
+#     name="OCA Odoo project",
+#     worktree=working_directory,
+#     detached=False,
+#     new_branch="prod",
+#     commitish="18.0",
+#     assume_repo_exists=True,
+#     force=True,
+#     # from_remote_branch: tuple[str, str] | None=None,
+#     #  assume_repo_exists=False,
+#     _su_user=host.data.odoo_username,
+# )
 
 # first setup db done manually
 # odoo@oca-france:~/oca-france$ uv run click-odoo-initdb -c ~/.odoorc -n oca-france-production -m oca_france_all --log-level info --no-cache --no-demo
@@ -59,18 +73,6 @@ odoo_config = files.template(
     environement_name=host.data.environement_name,
     server_env_ir_config_parameters=host.data.server_env_ir_config_parameters,
     _su_user=host.data.odoo_username
-)
-git_changed = git.worktree(
-    name="OCA Odoo project",
-    worktree=working_directory,
-    detached=False,
-    new_branch="prod",
-    commitish="18.0",
-    assume_repo_exists=True,
-    force=True,
-    # from_remote_branch: tuple[str, str] | None=None,
-    #  assume_repo_exists=False,
-    _su_user=host.data.odoo_username,
 )
 
 service_config = files.template(
@@ -94,7 +96,7 @@ systemd.service(
     name=f"Ensure odoo-oca-france.service is enabled and running",
     service=f"odoo-oca-france.service",
     running=True,
-    restarted=service_config.changed or git_changed.changed,
+    restarted=service_config.changed,
     enabled=True,
     command=None,
     _su_user=host.data.odoo_username,
